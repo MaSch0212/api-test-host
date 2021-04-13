@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 namespace ApiTestHost.Controllers
 {
     [Route("delay")]
+    [SwaggerTag("Provides functionality of a Delay Server")]
     public class DelayController : Controller
     {
         private readonly HttpClient _httpClient;
@@ -23,8 +25,20 @@ namespace ApiTestHost.Controllers
             _logger = logger;
         }
 
+        [SwaggerOperation("Calls the specified url with the request information of this http request after the specified delay time.")]
         [Route("{delay}/{*url}")]
-        public async Task Index(int delay, string url)
+        [HttpDelete]
+        [HttpGet]
+        [HttpHead]
+        [HttpOptions]
+        [HttpPatch]
+        [HttpPost]
+        [HttpPut]
+        public async Task Index(
+            [SwaggerParameter("The delay time in milliseconds.")]
+            int delay,
+            [SwaggerParameter("The url to call.")]
+            string url)
         {
             _logger.LogInformation("Delaying request to \"{0}\" by {1} milliseconds...", url, delay);
             await Task.Delay(delay);
