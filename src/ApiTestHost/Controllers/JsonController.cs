@@ -12,8 +12,10 @@ namespace ApiTestHost.Controllers
 {
     [Route("json")]
     [SwaggerTag("Provides functionality of a JSON Server")]
+    [ApiController]
     public class JsonController : Controller
     {
+        private static readonly string JsonFilesPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "json");
         private readonly ILogger<JsonController>? _logger;
 
         public JsonController(ILogger<JsonController>? logger)
@@ -60,7 +62,7 @@ namespace ApiTestHost.Controllers
         public async Task<IActionResult> WriteJson(
             string url,
             [SwaggerRequestBody("The content of the json document", Required = true)]
-            [FromBody] object json)
+            object json)
         {
             TryGetFilePath(url, out var filePath, false);
 
@@ -73,7 +75,8 @@ namespace ApiTestHost.Controllers
 
         private bool TryGetFilePath(string url, out string filePath, bool logNotFound = true)
         {
-            filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "json", url + ".json");
+            Directory.CreateDirectory(JsonFilesPath);
+            filePath = Path.Combine(JsonFilesPath, url + ".json");
             if (!System.IO.File.Exists(filePath))
             {
                 if (logNotFound)
