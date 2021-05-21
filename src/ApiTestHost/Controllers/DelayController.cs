@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace ApiTestHost.Controllers
 {
@@ -43,7 +44,7 @@ namespace ApiTestHost.Controllers
             _logger.LogInformation("Delaying request to \"{0}\" by {1} milliseconds...", url, delay);
             await Task.Delay(delay);
 
-            var targetUri = new UriBuilder(url) { Query = HttpContext.Request.QueryString.Value }.Uri;
+            var targetUri = new UriBuilder(HttpUtility.UrlDecode(url)) { Query = HttpContext.Request.QueryString.Value }.Uri;
 
             var req = HttpContext.Request;
             var request = new HttpRequestMessage(new HttpMethod(req.Method), targetUri);
