@@ -36,7 +36,7 @@ namespace ApiTestHost
                 (httpRequestMessage, cert, cetChain, policyErrors) =>
                 {
                     return true;
-                }
+                },
             });
 
             services.AddControllers();
@@ -78,8 +78,6 @@ namespace ApiTestHost
             {
                 endpoints.MapControllers();
             });
-
-            
         }
     }
 }
