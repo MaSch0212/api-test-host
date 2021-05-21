@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using ApiTestHost.Middlewares;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -20,9 +21,9 @@ namespace ApiTestHost.Controllers
         private readonly HttpClient _httpClient;
         private readonly ILogger<DelayController>? _logger;
 
-        public DelayController(ILogger<DelayController>? logger)
+        public DelayController(IHttpClientFactory clientFactory, ILogger<DelayController>? logger)
         {
-            _httpClient = new HttpClient();
+            _httpClient = clientFactory.CreateClient("HttpClientWithSSLUntrusted");
             _logger = logger;
         }
 
@@ -57,18 +58,7 @@ namespace ApiTestHost.Controllers
             _logger.LogInformation("Sending request to \"{0}\"...", url);
             var response = await _httpClient.SendAsync(request);
             _logger.LogInformation("Got response from \"{0}\". Redirecting response...", url);
-
-            var resp = HttpContext.Response;
-            resp.StatusCode = (int)response.StatusCode;
-            foreach (var header in response.Headers)
-                resp.Headers[header.Key] = new StringValues(header.Value.ToArray());
-            if (response.Content.Headers.Contains("Content-Type"))
-                resp.ContentType = response.Content.Headers.GetValues("Content-Type").Single();
-            using (var stream = await response.Content.ReadAsStreamAsync())
-            using (var bodyStream = resp.BodyWriter.AsStream())
-            {
-                await stream.CopyToAsync(bodyStream);
-            }
+            HttpContext.Items.Add(CopyResponseMiddleware.CopyKey, response);
         }
     }
 }
