@@ -1,13 +1,9 @@
-﻿using ApiTestHost.Middlewares;
+﻿using ApiTestHost.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 using Swashbuckle.AspNetCore.Annotations;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web;
@@ -47,18 +43,12 @@ namespace ApiTestHost.Controllers
 
             var targetUri = new UriBuilder(HttpUtility.UrlDecode(url)) { Query = HttpContext.Request.QueryString.Value }.Uri;
 
-            var req = HttpContext.Request;
-            var request = new HttpRequestMessage(new HttpMethod(req.Method), targetUri);
-            foreach (var header in req.Headers)
-                request.Headers.TryAddWithoutValidation(header.Key, header.Value.AsEnumerable());
-            request.Content = new StreamContent(req.Body);
-            if (req.Headers.ContainsKey("Content-Type"))
-                request.Content.Headers.Add("Content-Type", req.ContentType);
+            var request = HttpContext.CreateProxyHttpRequest(targetUri);
 
             _logger.LogInformation("Sending request to \"{0}\"...", url);
             var response = await _httpClient.SendAsync(request);
             _logger.LogInformation("Got response from \"{0}\". Redirecting response...", url);
-            HttpContext.Items.Add(CopyResponseMiddleware.CopyKey, response);
+            await HttpContext.CopyProxyHttpResponse(response);
         }
     }
 }
