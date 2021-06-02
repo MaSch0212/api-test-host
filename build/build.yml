@@ -65,6 +65,7 @@ steps:
         git push origin "$releaseTagName"
     }
   displayName: "\U0001F6E0 Determine Version and create Tag"
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
 
 - task: GitHubRelease@1
   displayName: "\U0001F680 Publish to GitHub (Create Release)"
